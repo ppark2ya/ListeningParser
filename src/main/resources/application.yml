@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://146.148.76.237:9735/senier_project?useSSL=false&amp;allowMultiQueries=true
+    username: senier
+    password: payment#135
+
+server:
+  port: 80
