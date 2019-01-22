@@ -1,7 +1,6 @@
 package com.myapp.senier;
 
 import javax.sql.DataSource;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -20,7 +19,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan(basePackages = {"com.myapp.senier"})
 @MapperScan(value = {"com.myapp.senier.persistence"})
 public class ListeningParserApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(ListeningParserApplication.class, args);
 	}

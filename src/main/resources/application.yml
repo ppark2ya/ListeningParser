@@ -13,4 +13,4 @@ spring:
       charset: UTF-8
       
 server:
-  port: 80
+  port: 8493
