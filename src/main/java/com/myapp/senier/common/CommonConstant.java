@@ -7,7 +7,9 @@ import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 
 public class CommonConstant {
-    
+    // GCP IP
+    public static final String GCP_SERVER_IP = "146.148.76.237";
+
     public static Scheduler scheduler;
     public static final String CRON_EXPRESSION_ZABBIX = "0 0/2 * * * ?";
     public static final String CRON_EXPRESSION_POSTMAN = "0 0/2 * * * ?";

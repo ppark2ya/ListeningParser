@@ -1,7 +1,9 @@
 spring:
+  profiles: default
+
   datasource:
-    driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://146.148.76.237:9735/senier_project?useSSL=false&amp;allowMultiQueries=true
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: jdbc:log4jdbc:mariadb://146.148.76.237:9735/senier_project?useSSL=false&amp;allowMultiQueries=true
     username: senier
     password: payment#135
     

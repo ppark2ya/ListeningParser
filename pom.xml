@@ -64,6 +64,29 @@
 			<artifactId>spring-batch-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- 영어 형태소 분석기 -->
+		<dependency> 
+			<groupId>edu.stanford.nlp</groupId> 
+			<artifactId>stanford-corenlp</artifactId> 
+			<version>3.5.2</version> 
+			<classifier>models</classifier> 
+		</dependency> 
+		<dependency> 
+			<groupId>edu.stanford.nlp</groupId> 
+			<artifactId>stanford-corenlp</artifactId> 
+			<version>3.5.2</version> 
+		</dependency> 
+		<dependency> 
+			<groupId>edu.stanford.nlp</groupId> 
+			<artifactId>stanford-parser</artifactId> 
+			<version>3.5.2</version> 
+		</dependency> 
+		<!-- Mybatis 쿼리 로깅-->
+		<dependency>
+			<groupId>org.bgee.log4jdbc-log4j2</groupId>
+			<artifactId>log4jdbc-log4j2-jdbc4.1</artifactId>
+			<version>1.16</version>
+		</dependency>
 	</dependencies>
 
 	<build>
