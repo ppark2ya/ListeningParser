@@ -2,9 +2,16 @@ package com.myapp.senier.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import org.json.simple.JSONObject;
+
+@SuppressWarnings("unchecked")
 public class DataModel extends HashMap<String, Object> {
     private final static long serialVersionUID = 536871008;
 
@@ -16,14 +23,14 @@ public class DataModel extends HashMap<String, Object> {
         super(map);
     }
 
-    public void putAll(Object value) {
+    public void putAll(Object value) throws Exception {
         // List<Map<>> 형태의 데이터를 일괄 삽입
         if(value instanceof List) {
             List<?> list = (List<?>)value;
             
             list.forEach(o -> {
                 if(o instanceof Map) {
-                    Map<String, Object> map = (HashMap)o;
+                    Map<String, Object> map = (HashMap<String, Object>)o;
 
                     map.forEach((k, v) -> {
                         super.put(k, v);    
@@ -31,12 +38,27 @@ public class DataModel extends HashMap<String, Object> {
                 }
             });
         } else {
-            super.putAll((HashMap)value);
+            super.putAll((HashMap<String, Object>)value);
         }
     }
 
+    public void putJson(JSONObject object) {
+        Iterator<String> iter = object.keySet().iterator();
+
+        while(iter.hasNext()) {
+            String key = iter.next();
+            Object value = object.get(key);
+            super.put(key, value);
+        }
+    }
+
+    public void putJsonString(String jsonString) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        super.putAll(mapper.readValue(jsonString, new TypeReference<DataModel>() {}));
+    }
+
     public HashMap<? extends String, ?> clone() {
-        return (HashMap)super.clone();
+        return (HashMap<String, Object>) super.clone();
     }
 
     public void putStrNull(String key, String value) {
