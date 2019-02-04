@@ -101,6 +101,14 @@ public class DataModel extends HashMap<String, Object> {
         }
     }
 
+    public void putFormattedTime() {
+
+    }
+
+    public void getFormattedTime() {
+        
+    }
+    
     public Object get(String key) {
         Object o = super.get(key);
 
@@ -122,4 +130,5 @@ public class DataModel extends HashMap<String, Object> {
             return o;
         }
     }
+
 }

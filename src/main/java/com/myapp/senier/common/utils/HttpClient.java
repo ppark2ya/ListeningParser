@@ -10,13 +10,11 @@ import com.myapp.senier.model.DataModel;
 public class HttpClient {
 
     private String ip;
-    private String port;
     private String api;
     private String method;
 
     private HttpClient(HttpClientBuilder builder) {
         this.ip = builder.ip;
-        this.port = builder.port;
         this.api = builder.api;
         this.method = builder.method;
     }
@@ -27,7 +25,6 @@ public class HttpClient {
 
     public static class HttpClientBuilder {
         private String ip;
-        private String port;
         private String api;
         private String method;
 
@@ -35,11 +32,6 @@ public class HttpClient {
 
         public HttpClientBuilder setIp(String ip) {
             this.ip = ip;
-            return this;
-        }
-
-        public HttpClientBuilder setPort(String port) {
-            this.port = port;
             return this;
         }
 
@@ -69,13 +61,16 @@ public class HttpClient {
         try {
             StringBuilder sendUrl = new StringBuilder();
             sendUrl.append(this.ip);
-            sendUrl.append(":" + this.port);
             sendUrl.append(this.api);
 
             url = new URL(sendUrl.toString());
 
             conn = (HttpURLConnection) url.openConnection();
+            conn.setUseCaches(false);
+            conn.setDoOutput(true);
             conn.setRequestMethod(this.method);
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setRequestProperty("Cache-Control", "no-cache");
             conn.setRequestProperty("Accept", "application/json");
             conn.connect();
 
@@ -92,6 +87,7 @@ public class HttpClient {
         } finally {
             try {
                 if(br != null) br.close();
+                if(conn != null) conn.disconnect();
             } catch(Exception e) {}
         }
 
