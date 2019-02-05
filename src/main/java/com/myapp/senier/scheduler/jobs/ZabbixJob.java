@@ -4,35 +4,51 @@ import java.util.Set;
 
 import com.myapp.senier.common.CommonConstant;
 import com.myapp.senier.common.utils.HttpClient;
-import com.myapp.senier.common.utils.StanfordNLP;
 import com.myapp.senier.model.DataModel;
+import com.myapp.senier.service.LogAnalysisService;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ZabbixJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(ZabbixJob.class);
-
+    
     public void execute(JobExecutionContext context) throws JobExecutionException {
         logger.info("ZabbixJob START !!!");
-        
-        HttpClient client = HttpClient
-                        .Builder()
-                        .setIp(CommonConstant.ZABBIX_SERVER_IP)
-                        .setApi(CommonConstant.API_ZABBIX)
-                        .setMethod(CommonConstant.GET)
-                        .build();
+        try {
+            HttpClient client = HttpClient
+                            .Builder()
+                            .setIp(CommonConstant.ZABBIX_SERVER_IP)
+                            .setApi(CommonConstant.API_ZABBIX)
+                            .setMethod(CommonConstant.GET)
+                            .build();
+    
+            DataModel response = client.send();
+            logger.info("ZabbixJob Response Log Message - {}", response.get("message"));
+    
+            HttpClient local = HttpClient
+                            .Builder()
+                            .setIp(CommonConstant.OWN_SERVER_IP)
+                            .setApi(CommonConstant.API_OWNSERVER + CommonConstant.ZABBIX_CODE)
+                            .setMethod(CommonConstant.POST)
+                            .setParams(response)
+                            .build();
+                            
+            DataModel words = local.send();
+            logger.info("ZabbixJob Natural Language Parser Result - {}", words);
+            // StanfordNLP nlp = new StanfordNLP();
+            // DataModel words = nlp.executeLogAnalyzer(dm);
+            // logger.info("ZabbixJob Natural Language Parser Result - {}", words);
+            
+            logger.info("ZabbixJob END !!!");
 
-        DataModel dm = client.send();
-        logger.info("ZabbixJob Response Log Message - {}", dm.get("message"));
-
-        StanfordNLP nlp = new StanfordNLP();
-        Set<String> words = nlp.getDistinctWords(dm.get("message").toString());
-        logger.info("ZabbixJob Natural Language Parser Result - {}", words);
-        
-        logger.info("ZabbixJob END !!!");
+        } catch(Exception e) {
+            logger.error("ZabbixJob ERROR - {}", e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

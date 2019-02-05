@@ -2,4 +2,47 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.myapp.senier.persistence.JobMapper">
 
+    <select id="getKeywords" parameterType="string" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+			KEYWORD as "keyword",
+			SERVICE_CD as "serviceCd",
+			PRIORITY_VALUE as "priorityVal",
+			CHG_FLAG as "chgFlag",
+			PREV_VALUE as "prevVal",
+            KEYLOG_CNT as "keylogCnt",
+            USE_CL as "useCl",
+            DATE_FORMAT(REG_TIME, '%Y%m%d') as "regDt",
+            DATE_FORMAT(REG_TIME, '%H%i%s') as "regTm",
+            DATE_FORMAT(UPD_TIME, '%Y%m%d') as "updDt",
+            DATE_FORMAT(UPD_TIME, '%H%i%s') as "updTm"
+		FROM
+			TB_KEYWORD
+        WHERE
+            SERVICE_CD = #{serviceCd}
+	</select>
+
+
+    <select id="getServerInfo" parameterType="string" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+			SERVICE_CD as "serviceCd",
+            ADDRESS as "address",
+            USE_CL as "useCl",
+            DATE_FORMAT(REG_TIME, '%Y-%m-%d') as "regDt",
+            DATE_FORMAT(REG_TIME, '%T') as "regTm",
+            DATE_FORMAT(UPD_TIME, '%Y-%m-%d') as "updDt",
+            DATE_FORMAT(UPD_TIME, '%T') as "updTm"
+		FROM
+			TB_LISTENING_SERVERS
+        WHERE
+            SERVICE_CD = #{serviceCd}
+	</select>
+
+    <insert id="insMorpheme" parameterType="com.myapp.senier.model.DataModel">
+        INSERT INTO TB_MORPHEME
+        (SERVICE_CD, WORD, POS)
+        VALUES (#{serviceCd}, #{word}, #{pos})
+    </insert>
+
+    <insert id="insLogHistory" parameterType="com.myapp.senier.model.DataModel">
+    </insert>
 </mapper>

@@ -1,0 +1,18 @@
+org:
+  quartz:
+    scheduler:
+      instanceName: Listening-parser
+      instanceId: AUTO
+      classLoadHelper:
+        class: org.quartz.simpl.ThreadContextClassLoadHelper
+
+    threadPool:
+      threadCount: 10
+
+    jobStore:
+      class: org.quartz.impl.jdbcjobstore.JobStoreTX
+      driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+      misfireThreshold: 60000
+      tablePrefix: QRTZ_
+      isClustered: true
+      clusterCheckinInterval: 20000

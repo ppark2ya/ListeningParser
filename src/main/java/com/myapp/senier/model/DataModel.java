@@ -101,28 +101,10 @@ public class DataModel extends HashMap<String, Object> {
         }
     }
 
-    public void putFormattedTime() {
-
-    }
-
-    public void getFormattedTime() {
-        
-    }
-    
     public Object get(String key) {
         Object o = super.get(key);
 
-        if(o instanceof String) {
-            return o.toString();
-        } else if(o instanceof Integer) {
-            return (Integer)o;
-        } else if(o instanceof Double) {
-            return (Double)o;
-        } else if(o instanceof Long) {
-            return (Long)o;
-        } else if(o instanceof Boolean) {
-            return (Boolean)o;
-        } else if(o instanceof List) {
+        if(o instanceof List) {
             return (ArrayList<?>)o;
         } else if(o instanceof Map) {
             return (HashMap<?, ?>)o;
@@ -131,4 +113,58 @@ public class DataModel extends HashMap<String, Object> {
         }
     }
 
+    public String getStrNull(String key) {
+        Object o = super.get(key);
+        
+        if(o == null) {
+            return "";
+        }
+        return o.toString();
+    }
+
+    public Integer getInteger(String key) {
+        Object o = super.get(key);
+        
+        if(o == null) {
+            return 0;
+        }
+        return (Integer)o;
+    }
+    
+    public Double getDouble(String key) {
+        Object o = super.get(key);
+        
+        if(o == null) {
+            return 0.0d;
+        }
+        return (Double)o;
+    }
+
+    public Long getLong(String key) {
+        Object o = super.get(key);
+        
+        if(o == null) {
+            return 0l;
+        }
+        return (Long)o;
+    }
+
+    public Boolean getBoolean(String key) {
+        Object o = super.get(key);
+        
+        if(o == null) {
+            return false;
+        }
+        return (Boolean)o;
+    }
+
+    public ArrayList<?> getArrayList(String key) {
+        Object o = super.get(key);
+
+        if(o != null && o instanceof List) {
+            return (ArrayList<?>)o;
+        } 
+        
+        return new ArrayList<>();
+    }
 }
