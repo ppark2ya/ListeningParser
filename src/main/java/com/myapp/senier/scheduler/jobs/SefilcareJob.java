@@ -1,7 +1,5 @@
 package com.myapp.senier.scheduler.jobs;
 
-import java.util.Set;
-
 import com.myapp.senier.common.CommonConstant;
 import com.myapp.senier.common.utils.HttpClient;
 import com.myapp.senier.model.DataModel;

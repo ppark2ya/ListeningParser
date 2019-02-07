@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.myapp.senier.persistence.JobMapper">
 
-    <select id="getKeywords" parameterType="string" resultType="com.myapp.senier.model.DataModel">
+    <select id="getKeywordList" parameterType="string" resultType="com.myapp.senier.model.DataModel">
 		SELECT
 			KEYWORD as "keyword",
 			SERVICE_CD as "serviceCd",
@@ -10,39 +10,138 @@
 			CHG_FLAG as "chgFlag",
 			PREV_VALUE as "prevVal",
             KEYLOG_CNT as "keylogCnt",
+            EXCEPTION_ATTR as "exceptionAttr",
             USE_CL as "useCl",
-            DATE_FORMAT(REG_TIME, '%Y%m%d') as "regDt",
-            DATE_FORMAT(REG_TIME, '%H%i%s') as "regTm",
-            DATE_FORMAT(UPD_TIME, '%Y%m%d') as "updDt",
-            DATE_FORMAT(UPD_TIME, '%H%i%s') as "updTm"
+            REG_DT as "regDt",
+            REG_TM as "regTm",
+            UPD_DT as "updDt",
+            UPD_TM as "updTm"
 		FROM
 			TB_KEYWORD
         WHERE
-            SERVICE_CD = #{serviceCd}
+            SERVICE_CD = #{serviceCd} AND USE_CL = '1'
+        ORDER BY
+            priorityVal DESC, keyword ASC
 	</select>
 
+    <select id="getOnlyKeywords" parameterType="string" resultType="string">
+		SELECT
+			LOWER(KEYWORD) as "keyword"
+		FROM
+			TB_KEYWORD
+        WHERE
+            SERVICE_CD = #{serviceCd} AND USE_CL = '1'
+        ORDER BY
+            PRIORITY_VALUE DESC, keyword ASC
+	</select>
+
+    <select id="isCritical" parameterType="com.myapp.senier.model.DataModel" resultType="string">
+		SELECT
+			CASE WHEN PRIORITY_VALUE > 150 THEN 'critical' ELSE 'normal' END as "isCritical"
+		FROM
+			TB_KEYWORD
+        WHERE
+            KEYWORD = #{keyword} AND SERVICE_CD = #{serviceCd} AND USE_CL = '1'
+	</select>
 
     <select id="getServerInfo" parameterType="string" resultType="com.myapp.senier.model.DataModel">
 		SELECT
 			SERVICE_CD as "serviceCd",
             ADDRESS as "address",
             USE_CL as "useCl",
-            DATE_FORMAT(REG_TIME, '%Y-%m-%d') as "regDt",
-            DATE_FORMAT(REG_TIME, '%T') as "regTm",
-            DATE_FORMAT(UPD_TIME, '%Y-%m-%d') as "updDt",
-            DATE_FORMAT(UPD_TIME, '%T') as "updTm"
+            REG_DT as "regDt",
+            REG_TM as "regTm",
+            UPD_DT as "updDt",
+            UPD_TM as "updTm"
 		FROM
 			TB_LISTENING_SERVERS
         WHERE
             SERVICE_CD = #{serviceCd}
 	</select>
 
-    <insert id="insMorpheme" parameterType="com.myapp.senier.model.DataModel">
-        INSERT INTO TB_MORPHEME
-        (SERVICE_CD, WORD, POS)
-        VALUES (#{serviceCd}, #{word}, #{pos})
-    </insert>
+    <select id="getErrorStatus" parameterType="string" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+			SERVICE_CD as "serviceCd",
+            ERR_SUBJECT as "errSubject",
+            STATUS_NM as "statusNm",
+            EXPRESSION as "expression",
+            ERR_TYPE as "errType",
+            REG_DT as "regDt",
+            REG_TM as "regTm",
+            UPD_DT as "updDt",
+            UPD_TM as "updTm"
+		FROM
+			TB_ERROR_STATUS
+        WHERE
+            SERVICE_CD = #{serviceCd}
+	</select>
+
+    <update id="updateKeywordCnt" parameterType="java.util.List">
+        <foreach collection="list" item="DataModel" index="index" separator=";">
+            UPDATE TB_KEYWORD 
+            SET KEYLOG_CNT = KEYLOG_CNT + 1,
+                UPD_DT = curdate() + 0,
+                UPD_TM = DATE_FORMAT(now(), '%H%i%s')
+            WHERE KEYWORD = #{DataModel.keyword}
+        </foreach>
+    </update>
 
     <insert id="insLogHistory" parameterType="com.myapp.senier.model.DataModel">
+        INSERT INTO TB_LOG_HISTORY
+        (SERVICE_CD, LOG_PRIORITY, LOG_TYPE, TITLE, CONTENT, LOG_DT, LOG_TM)
+        VALUES(#{serviceCd}, #{logStatus}, #{logType}, #{title}, #{content}, #{logDt}, #{logTm})
+    </insert>
+
+    <select id="getUserInfoList" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+            UID as "uid",
+            AUTH as "auth",
+            TEL_NUM as "telNum",
+            USE_CL as "useCl",
+            REG_DT as "regDt",
+            REG_TM as "regTm",
+            UPD_DT as "updDt",
+            UPD_TM as "updTm"
+		FROM
+			TB_USER
+        WHERE
+            USE_CL = '1'
+	</select>
+
+    <select id="getCodeList" parameterType="com.myapp.senier.model.DataModel" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+            CODE_CL as "codeCl",
+            CODE_NM as "codeNm",
+            DESC1 as "description"
+		FROM
+			TB_CODE
+        WHERE
+            CODE_CL=#{codeCl} 
+            <if test="codeNm != null">
+            AND CODE_NM=#{codeNm}
+            </if>
+	</select>
+
+    <select id="getAuthUserList" parameterType="string" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+            u.UID as "uid",
+            u.TEL_NUM as "telNum",
+            c.DESC1 as "description"
+		FROM
+            TB_USER u
+        INNER JOIN 
+			TB_CODE c ON u.AUTH = c.CODE_CL
+        WHERE
+            u.USE_CL = '1' AND c.CODE_CL IN (
+                SELECT CODE_CL 
+                FROM TB_CODE 
+                WHERE DESC1 LIKE CONCAT('%', #{serverName}, '%')
+            )
+	</select>
+
+    <insert id="insSMSSendHistory" parameterType="com.myapp.senier.model.DataModel">
+        INSERT INTO TB_SMS_SEND_HISTORY
+        (GROUP_ID, SERVICE_CD, SUCCESS_FLG, SEND_DT, SEND_TM)
+        VALUES(#{groupId}, #{serviceCd}, #{successFlg}, #{sendDt}, #{sendTm})
     </insert>
 </mapper>

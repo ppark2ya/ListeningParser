@@ -49,7 +49,7 @@ public class KMPSearch {
 
         p = pattern.toCharArray();
 
-        for(int i = 0; i < m; i++) {
+        for(int i = 1; i < m; i++) {
             while(i > 0 && p[i] != p[j]) {
                 j = pi[j - 1];
             }

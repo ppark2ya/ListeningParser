@@ -1,9 +1,14 @@
 package com.myapp.senier.service.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import com.myapp.senier.common.CommonConstant;
+import com.myapp.senier.common.utils.KMPSearch;
+import com.myapp.senier.common.utils.PushMessage;
+import com.myapp.senier.common.utils.TimeUtil;
 import com.myapp.senier.model.DataModel;
 import com.myapp.senier.persistence.JobMapper;
 import com.myapp.senier.service.LogAnalysisService;
@@ -13,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
@@ -24,21 +28,33 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
     @Autowired
     private JobMapper jobMapper;
     
+    @Override
+    public DataModel getServerInfo(String serviceCd) {
+        return jobMapper.getServerInfo(serviceCd);
+    }
+
     // 키워드와 로그 데이터 비교. 형태소 db 저장, 로그 히스토리 저장. 로그 분석 결과 리턴.
     @Transactional
     @Override
     public DataModel executeLogAnalyzer(DataModel logMap) throws Exception {
-        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
-
         DataModel resultMap = new DataModel();
-        logger.info("executeLogAnalyzer param - {}", logMap.getStrNull("serviceCd"));
-        List<DataModel> keyList = jobMapper.getKeywords(logMap.getStrNull("serviceCd"));
-        logger.info("executeLogAnalyzer keyList - {}", keyList);
+        String message = logMap.getStrNull("message"), serviceCd = logMap.getStrNull("serviceCd"), logType = "";
+        // 키워드 테이블의 전체 데이터
+        List<DataModel> fullKeyList = jobMapper.getKeywordList(serviceCd);
+        // 키워드 데이터 ( 검색에 용이하게 쓰기위해 키워드만 따로 추출 )
+        List<String> onlyKeyList = jobMapper.getOnlyKeywords(serviceCd);
+        // 키워드 로그 카운팅용 리스트
+        List<DataModel> logCntList = new ArrayList<>();
+        // 로그 타이틀
+        String title = splitTitle(message);
+        List<String> parsedList = new ArrayList<>();
+
+        logger.info("executeLogAnalyzer keyList - {}", onlyKeyList);
         boolean isCritical = false; 
 
         MaxentTagger tagger = new MaxentTagger("edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger");
-    
-        String taggedString = tagger.tagString(logMap.getStrNull("message"));
+        
+        String taggedString = tagger.tagString(message);
         logger.info("executeLogAnalyzer Parsed Log data - {}", taggedString);
 
         StringTokenizer tok = new StringTokenizer(taggedString, " ");
@@ -58,8 +74,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                 pos.matches(",") || 
                 pos.matches(".") ||
                 pos.matches("POS") ||
-                pos.matches("MD") ||
-                pos.matches("VBZ")
+                pos.matches("MD")
             ) {
                 continue;
             }
@@ -73,26 +88,101 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                 pos.matches("CD.*") ||
                 pos.matches("CC.*")
             ) {
-                // step1 : 분석처리된 단어들을 DB에 저장 ( 사용자 인터페이스에서 통계치로 사용 )
-                // 형태소
-                logMap.putStrNull("pos", pos);
-                // 단어
-                logMap.putStrNull("word", word);
-                // 형태소 분석된 주요 단어들을 DB에 저장
-                jobMapper.insMorpheme(logMap);
+                logger.info("검사한 단어 - {}", word);
+                parsedList.add(word);
+                
+                // 키워드 체크
+                int keyIndex = onlyKeyList.indexOf(word.toLowerCase());
+                // 키워드 발견
+                if(keyIndex > -1) {
+                    // 키워드 데이터 get
+                    DataModel keywordData = fullKeyList.get(keyIndex);
+                    // 발견된 키워드 수집 
+                    logCntList.add(keywordData);
+                    // 키워드 처리 방법 체크
+                    String excepAttr = keywordData.getStrNull("exceptionAttr").toUpperCase();
 
-                // step2 : 키워드 테이블의 값과 비교
-                if(!isCritical && keyList.contains(word)) {
-                    isCritical = true;
-                    resultMap.putStrNull("logStatus", CommonConstant.CRITICAL);
+                    // 로그 타입이면 ( ex: DISK, Database, Network, ... )
+                    if(excepAttr.equals("LOG_TYPE")) {
+                        logType = onlyKeyList.get(keyIndex);
+                    } 
+                    // 크리티컬 상태 체크
+                    else if(!isCritical && excepAttr.equals("CRITICAL/LMS")) {
+                        // 키워드와 일치하는 단어를 찾았을 때 키워드 가중치를 통해서 크리티컬 여부 체크
+                        isCritical = jobMapper.isCritical(keywordData).equals("critical") ? true : false;
+                        resultMap.putStrNull("logStatus", CommonConstant.CRITICAL);
+                    }
+                }
+
+                if(word.equals("less") || word.equals("more")) {
+                    
                 }
             }
         }
 
+        resultMap.putStrNull("title", title);
+        resultMap.putStrNull("content", message);
+        resultMap.putStrNull("serviceCd", serviceCd);
+        resultMap.putStrNull("logType", logType);
+        resultMap.putStrNull("logDt", TimeUtil.currentDate());
+        resultMap.putStrNull("logTm", TimeUtil.currentTime());
         if(!isCritical) {
             resultMap.putStrNull("logStatus", CommonConstant.NORMAL);
         }
+        
+        // 키워드 로그 카운팅
+        jobMapper.updateKeywordCnt(logCntList);
+        // 로그 데이터 저장
+        jobMapper.insLogHistory(resultMap);
 
         return resultMap;
+    }
+
+    private String splitTitle(String message) {
+        String sep = "\n";
+        List<String> result = new ArrayList<>();
+
+        List<Integer> sepList = KMPSearch.find(message, sep);
+        if(sepList.size() > 0) {
+            result = new ArrayList<>(Arrays.asList(message.split(sep)));
+        }
+
+        return result.get(0);
+    }
+
+    @Transactional
+    @Override
+    public DataModel sendMessageToManagers(DataModel model) throws Exception {
+        DataModel result = new DataModel();
+        String message = model.getStrNull("content");
+        model.put("codeCl", model.getStrNull("serviceCd"));
+        // 코드 테이블 조회
+        String serverName = jobMapper.getCodeList(model).getStrNull("description");
+        model.put("serverName", serverName);
+        List<DataModel> authUserList = jobMapper.getAuthUserList(model);
+        logger.info("메세지 받을 관리자 목록 - {}", authUserList);
+
+        for(DataModel user : authUserList) {
+            PushMessage pm = new PushMessage();
+            DataModel resMap = pm.sendLMS(user.getStrNull("telNum"), message);
+
+            resMap.putStrNull("serviceCd", model.getStrNull("serviceCd"));
+            resMap.putStrNull("sendDt", TimeUtil.currentDate());
+            resMap.putStrNull("sendTm", TimeUtil.currentTime());
+
+            if(!resMap.isEmpty()) {
+                logger.info("유저ID : {}, 전화번호 : {}", user.getStrNull("uid"), user.getStrNull("telNum"));
+                resMap.putStrNull("groupId", resMap.getStrNull("group_id"));
+                resMap.putStrNull("successFlg", "1");
+                jobMapper.insSMSSendHistory(resMap);
+            } else {
+                resMap.putStrNull("groupId", "NOT EXIST");
+                resMap.putStrNull("successFlg", "0");
+                jobMapper.insSMSSendHistory(resMap);
+            }
+            result.putAll(resMap);
+        }
+
+        return result;
     }
 }

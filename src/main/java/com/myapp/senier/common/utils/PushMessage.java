@@ -32,14 +32,14 @@ public class PushMessage {
      * @param serverType
      * @return 
      */
-    public DataModel sendSMS(String serverType) {
+    public DataModel sendSMS(String telNum, String message) {
         DataModel resMap = new DataModel();
         try {
             HashMap<String, String> params = new HashMap<>();
-            params.put("to", "01027253120");
+            params.put("to", telNum);
             params.put("from", "01027253120");
             params.put("type", "SMS");
-            params.put("text", "문자보내기 테스트");
+            params.put("text", message);
     
             JSONObject obj = (JSONObject) coolsms.send(params);
 
@@ -58,14 +58,14 @@ public class PushMessage {
      * @param serverType
      * @return
      */
-    public DataModel sendLMS(String serverType) {
+    public DataModel sendLMS(String telNum, String message) {
         DataModel resMap = new DataModel();
         try {
             HashMap<String, String> params = new HashMap<>();
-            params.put("to", "");
-            params.put("from", "");
+            params.put("to", telNum);
+            params.put("from", "01027253120");
             params.put("type", "LMS");
-            params.put("text", "문자보내기 테스트");
+            params.put("text", message);
     
             JSONObject obj = (JSONObject) coolsms.send(params);
 
@@ -84,15 +84,15 @@ public class PushMessage {
      * @param serverType
      * @return
      */
-    public DataModel sendMMS(String serverType) {
+    public DataModel sendMMS(String telNum, String message) {
         DataModel resMap = new DataModel();
         try {
             HashMap<String, String> params = new HashMap<>();
-            params.put("to", "");
+            params.put("to", telNum);
             params.put("from", "");
             params.put("type", "MMS");
             params.put("text", "문자보내기 테스트");
-            params.put("image", "");
+            params.put("image", message);
     
             JSONObject obj = (JSONObject) coolsms.send(params);
 
@@ -111,11 +111,11 @@ public class PushMessage {
      * @param serverType
      * @return
      */
-    public DataModel sendReservationSMS(String serverType) {
+    public DataModel sendReservationSMS(String telNum, String message) {
         DataModel resMap = new DataModel();
         try {
             HashMap<String, String> params = new HashMap<>();
-            params.put("to", "");
+            params.put("to", telNum);
             params.put("from", "");
             params.put("type", "SMS");
             params.put("text", "문자보내기 테스트");
@@ -135,10 +135,9 @@ public class PushMessage {
 
     /**
      * 예약문자 취소
-     * @param serverType
      * @return
      */
-    public DataModel cancelReservationSMS(String serverType) {
+    public DataModel cancelReservationSMS() {
         DataModel resMap = new DataModel();
         try {
             HashMap<String, String> params = new HashMap<>();

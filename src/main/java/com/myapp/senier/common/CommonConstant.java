@@ -23,6 +23,8 @@ public class CommonConstant {
     // LOG CODE
     public static final String NORMAL = "NORMAL";
     public static final String CRITICAL = "CRITICAL";
+    public static final String NOT_USED = "0";
+    public static final String USED = "1";
 
     // HTTP METHOD
     public static final String POST = "POST";

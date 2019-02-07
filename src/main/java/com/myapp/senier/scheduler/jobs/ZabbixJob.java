@@ -1,18 +1,14 @@
 package com.myapp.senier.scheduler.jobs;
 
-import java.util.Set;
-
 import com.myapp.senier.common.CommonConstant;
 import com.myapp.senier.common.utils.HttpClient;
 import com.myapp.senier.model.DataModel;
-import com.myapp.senier.service.LogAnalysisService;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class ZabbixJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(ZabbixJob.class);
@@ -40,9 +36,6 @@ public class ZabbixJob implements Job {
                             
             DataModel words = local.send();
             logger.info("ZabbixJob Natural Language Parser Result - {}", words);
-            // StanfordNLP nlp = new StanfordNLP();
-            // DataModel words = nlp.executeLogAnalyzer(dm);
-            // logger.info("ZabbixJob Natural Language Parser Result - {}", words);
             
             logger.info("ZabbixJob END !!!");
 
