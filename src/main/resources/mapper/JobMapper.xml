@@ -92,22 +92,6 @@
         VALUES(#{serviceCd}, #{logStatus}, #{logType}, #{title}, #{content}, #{logDt}, #{logTm})
     </insert>
 
-    <select id="getUserInfoList" resultType="com.myapp.senier.model.DataModel">
-		SELECT
-            UID as "uid",
-            AUTH as "auth",
-            TEL_NUM as "telNum",
-            USE_CL as "useCl",
-            REG_DT as "regDt",
-            REG_TM as "regTm",
-            UPD_DT as "updDt",
-            UPD_TM as "updTm"
-		FROM
-			TB_USER
-        WHERE
-            USE_CL = '1'
-	</select>
-
     <select id="getCodeList" parameterType="com.myapp.senier.model.DataModel" resultType="com.myapp.senier.model.DataModel">
 		SELECT
             CODE_CL as "codeCl",

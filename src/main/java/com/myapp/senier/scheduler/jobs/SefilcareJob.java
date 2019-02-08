@@ -23,13 +23,19 @@ public class SefilcareJob implements Job {
                             .setMethod(CommonConstant.GET)
                             .build();
     
-            DataModel dm = client.send();
-            dm.putStrNull("serviceCd", CommonConstant.SEFILCARE_CODE);
-            logger.info("SefilcareJob Response Log Message - {}", dm.get("message"));
+            DataModel response = client.send();
+            logger.info("SefilcareJob Response Log Message - {}", response.get("message"));
     
-            // StanfordNLP nlp = new StanfordNLP();
-            // DataModel words = nlp.executeLogAnalyzer(dm);
-            // logger.info("SefilcareJob Natural Language Parser Result - {}", words);
+            HttpClient local = HttpClient
+                            .Builder()
+                            .setIp(CommonConstant.OWN_SERVER_IP)
+                            .setApi(CommonConstant.API_OWNSERVER + CommonConstant.SEFILCARE_CODE)
+                            .setMethod(CommonConstant.POST)
+                            .setParams(response)
+                            .build();
+                            
+            DataModel result = local.send();
+            logger.info("SefilcareJob Natural Language Parser Result - {}", result);
             
             logger.info("SefilcareJob END !!!");
             

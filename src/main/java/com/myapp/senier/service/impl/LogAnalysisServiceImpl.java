@@ -1,13 +1,13 @@
 package com.myapp.senier.service.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import com.myapp.senier.common.CommonConstant;
 import com.myapp.senier.common.utils.KMPSearch;
 import com.myapp.senier.common.utils.PushMessage;
+import com.myapp.senier.common.utils.StringUtil;
 import com.myapp.senier.common.utils.TimeUtil;
 import com.myapp.senier.model.DataModel;
 import com.myapp.senier.persistence.JobMapper;
@@ -33,12 +33,19 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         return jobMapper.getServerInfo(serviceCd);
     }
 
-    // 키워드와 로그 데이터 비교. 형태소 db 저장, 로그 히스토리 저장. 로그 분석 결과 리턴.
+    // 키워드와 로그 데이터 비교. 로그 히스토리 저장. 로그 분석 결과 리턴.
     @Transactional
     @Override
     public DataModel executeLogAnalyzer(DataModel logMap) throws Exception {
         DataModel resultMap = new DataModel();
-        String message = logMap.getStrNull("message"), serviceCd = logMap.getStrNull("serviceCd"), logType = "";
+        // 전달받은 로그 내용
+        String message = logMap.getStrNull("message");
+        // 응답 서버 코드
+        String serviceCd = logMap.getStrNull("serviceCd");
+        // 기본 로그 타입 ( Default : 웹요청 )
+        String logType = "HTTP";
+        // 포스트맨 서버용 패턴
+        String postmanPattern = "\\?.*?\\!";
         // 키워드 테이블의 전체 데이터
         List<DataModel> fullKeyList = jobMapper.getKeywordList(serviceCd);
         // 키워드 데이터 ( 검색에 용이하게 쓰기위해 키워드만 따로 추출 )
@@ -46,11 +53,22 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         // 키워드 로그 카운팅용 리스트
         List<DataModel> logCntList = new ArrayList<>();
         // 로그 타이틀
-        String title = splitTitle(message);
+        String title = StringUtil.splitTitle(message);
+        // 파싱된 단어 저장
         List<String> parsedList = new ArrayList<>();
 
         logger.info("executeLogAnalyzer keyList - {}", onlyKeyList);
         boolean isCritical = false; 
+
+        // 포스트맨 로그의 경우 ?와 !사이에 not이 들어가면 무조건 크리티컬로 간주
+        if(serviceCd.equals(CommonConstant.POSTMAN_CODE)) {
+            String findStr = StringUtil.findSpecificWord(message, postmanPattern);
+            List<Integer> sepList = KMPSearch.find(findStr.toLowerCase(), "not");
+            if(!sepList.isEmpty()) {
+                isCritical = true;
+                resultMap.putStrNull("logStatus", CommonConstant.CRITICAL);
+            }
+        }
 
         MaxentTagger tagger = new MaxentTagger("edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger");
         
@@ -88,9 +106,30 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                 pos.matches("CD.*") ||
                 pos.matches("CC.*")
             ) {
-                logger.info("검사한 단어 - {}", word);
+                logger.info("executeLogAnalyzer WORD - {} / POS - {}", word, pos);
                 parsedList.add(word);
                 
+                // 자체 서버 HTTP 에러코드 체크
+                if(pos.matches("CD.*") &&
+                    serviceCd.equals(CommonConstant.CHECKSERVER_CODE) && 
+                    word.matches(".*[0-9]*.*") &&
+                    word.length() >= 3
+                ) {
+                    String httpStatusCode = StringUtil.findSpecificWord(word, "[0-9]*");
+                    String requestError = StringUtil.nvl(StringUtil.findSpecificWord(httpStatusCode, "^4[0-9]{2,2}"), CommonConstant.NOT_USED);
+                    String serverError = StringUtil.nvl(StringUtil.findSpecificWord(httpStatusCode, "^5[0-9]{2,2}"), CommonConstant.NOT_USED);
+                    
+                    if(!requestError.equals(CommonConstant.NOT_USED)) {
+                        logType += " " + requestError;
+                        word = "4xx";
+                    }
+
+                    if(!serverError.equals(CommonConstant.NOT_USED)) {
+                        logType += " " + serverError;
+                        word = "5xx";
+                    }
+                }
+
                 // 키워드 체크
                 int keyIndex = onlyKeyList.indexOf(word.toLowerCase());
                 // 키워드 발견
@@ -113,10 +152,6 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                         resultMap.putStrNull("logStatus", CommonConstant.CRITICAL);
                     }
                 }
-
-                if(word.equals("less") || word.equals("more")) {
-                    
-                }
             }
         }
 
@@ -130,24 +165,14 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
             resultMap.putStrNull("logStatus", CommonConstant.NORMAL);
         }
         
-        // 키워드 로그 카운팅
-        jobMapper.updateKeywordCnt(logCntList);
+        if(!logCntList.isEmpty()) {
+            // 키워드 로그 카운팅
+            jobMapper.updateKeywordCnt(logCntList);
+        }
         // 로그 데이터 저장
         jobMapper.insLogHistory(resultMap);
 
         return resultMap;
-    }
-
-    private String splitTitle(String message) {
-        String sep = "\n";
-        List<String> result = new ArrayList<>();
-
-        List<Integer> sepList = KMPSearch.find(message, sep);
-        if(sepList.size() > 0) {
-            result = new ArrayList<>(Arrays.asList(message.split(sep)));
-        }
-
-        return result.get(0);
     }
 
     @Transactional

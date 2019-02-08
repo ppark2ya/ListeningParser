@@ -38,7 +38,7 @@ public class SchedulingController {
             if(serverInfo.getStrNull("useCl").equals(CommonConstant.USED)) {
                 resultMap.putAll(logAnalysisService.executeLogAnalyzer(model));
             } else {
-                logger.info("사용 중이 아닌 서버입니다.");
+                logger.info("사용하지 않는 서버입니다.");
                 resultMap.putStrNull("logStatus", CommonConstant.NOT_USED);
                 return resultMap;
             }
@@ -46,12 +46,12 @@ public class SchedulingController {
             // 크리티컬한 상태일 경우 문자 메세지 발송
             // 유저 테이블의 권한을 코드테이블을 통해 조회 후 해당되는 유저에게 메세지 전송
             if(resultMap.getStrNull("logStatus").equals(CommonConstant.CRITICAL)) {
-                resultMap.putAll(logAnalysisService.sendMessageToManagers(resultMap));
+                //resultMap.putAll(logAnalysisService.sendMessageToManagers(resultMap));
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
-        return model;
+        return resultMap;
     }
     
 }

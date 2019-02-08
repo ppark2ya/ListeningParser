@@ -33,7 +33,7 @@ public class HttpClient {
         return new HttpClientBuilder();
     }
 
-    public static class HttpClientBuilder {
+    public static class HttpClientBuilder implements Builder<HttpClient>{
         private String ip;
         private String api;
         private String method;

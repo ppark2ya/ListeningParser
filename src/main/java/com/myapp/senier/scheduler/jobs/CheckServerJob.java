@@ -24,15 +24,23 @@ public class CheckServerJob implements Job {
                             .setMethod(CommonConstant.GET)
                             .build();
     
-            DataModel dm = client.send();
-            dm.putStrNull("serviceCd", CommonConstant.CHECKSERVER_CODE);
-            logger.info("CheckServerJob Response Log Message - {}", dm.get("message"));
+            DataModel response = client.send();
+            logger.info("CheckServerJob Response Log Message - {}", response.get("message"));
+            
     
-            // StanfordNLP nlp = new StanfordNLP();
-            // DataModel words = nlp.executeLogAnalyzer(dm);
-            // logger.info("CheckServerJob Natural Language Parser Result - {}", words);
+            HttpClient local = HttpClient
+                            .Builder()
+                            .setIp(CommonConstant.OWN_SERVER_IP)
+                            .setApi(CommonConstant.API_OWNSERVER + CommonConstant.CHECKSERVER_CODE)
+                            .setMethod(CommonConstant.POST)
+                            .setParams(response)
+                            .build();
+                            
+            DataModel result = local.send();
+            logger.info("CheckServerJob Natural Language Parser Result - {}", result);
             
             logger.info("CheckServerJob END !!!");
+            
         } catch(Exception e) {
             e.printStackTrace();
         }

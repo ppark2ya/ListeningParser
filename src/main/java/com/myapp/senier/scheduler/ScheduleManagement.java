@@ -33,30 +33,30 @@ public class ScheduleManagement {
         scheduler.start();
         
         JobDetail ZabbixJob = JobBuilder.newJob(ZabbixJob.class).build();
-        // JobDetail PostmanJob = JobBuilder.newJob(PostmanJob.class).build();
-        // JobDetail SefilcareJob = JobBuilder.newJob(SefilcareJob.class).build();
-        // JobDetail CheckServerJob = JobBuilder.newJob(CheckServerJob.class).build();
+        JobDetail PostmanJob = JobBuilder.newJob(PostmanJob.class).build();
+        JobDetail SefilcareJob = JobBuilder.newJob(SefilcareJob.class).build();
+        JobDetail CheckServerJob = JobBuilder.newJob(CheckServerJob.class).build();
 
         // QUARTZ TRIGGER
         Trigger zabbixTrigger = TriggerBuilder.newTrigger()
             .withIdentity(new TriggerKey("zabbixKey"))
             .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_ZABBIX)).build();
 
-        // Trigger postmanTrigger = TriggerBuilder.newTrigger()
-        //     .withIdentity(new TriggerKey("postmanKey"))
-        //     .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_POSTMAN)).build();
+        Trigger postmanTrigger = TriggerBuilder.newTrigger()
+            .withIdentity(new TriggerKey("postmanKey"))
+            .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_POSTMAN)).build();
 
-        // Trigger sefilcareTrigger = TriggerBuilder.newTrigger()
-        //     .withIdentity(new TriggerKey("sefilcareKey"))
-        //     .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_SEFILCARE)).build();
+        Trigger sefilcareTrigger = TriggerBuilder.newTrigger()
+            .withIdentity(new TriggerKey("sefilcareKey"))
+            .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_SEFILCARE)).build();
 
-        // Trigger checkserverTrigger = TriggerBuilder.newTrigger()
-        //     .withIdentity(new TriggerKey("checkserverKey"))
-        //     .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_CHECKSERVER)).build();
+        Trigger checkserverTrigger = TriggerBuilder.newTrigger()
+            .withIdentity(new TriggerKey("checkserverKey"))
+            .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_CHECKSERVER)).build();
 
-        scheduler.scheduleJob(ZabbixJob, zabbixTrigger);
+        // scheduler.scheduleJob(ZabbixJob, zabbixTrigger);
         // scheduler.scheduleJob(PostmanJob, postmanTrigger);
-        // scheduler.scheduleJob(SefilcareJob, sefilcareTrigger);
+        scheduler.scheduleJob(SefilcareJob, sefilcareTrigger);
         // scheduler.scheduleJob(CheckServerJob, checkserverTrigger);
     }
 }

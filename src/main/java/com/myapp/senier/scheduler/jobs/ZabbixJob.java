@@ -34,8 +34,8 @@ public class ZabbixJob implements Job {
                             .setParams(response)
                             .build();
                             
-            DataModel words = local.send();
-            logger.info("ZabbixJob Natural Language Parser Result - {}", words);
+            DataModel result = local.send();
+            logger.info("ZabbixJob Natural Language Parser Result - {}", result);
             
             logger.info("ZabbixJob END !!!");
 

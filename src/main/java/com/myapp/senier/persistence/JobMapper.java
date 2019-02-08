@@ -17,8 +17,6 @@ public interface JobMapper {
     public int updateKeywordCnt(List<DataModel> list);
     // 로그 히스토리 업데이트
     public int insLogHistory(DataModel dm);
-    // 유저정보 조회
-    public List<DataModel> getUserInfoList();
     // 코드 테이블 조회
     public DataModel getCodeList(DataModel dm);
     // 수신받은 서버에 조회할 권한을 가진 유저 조회

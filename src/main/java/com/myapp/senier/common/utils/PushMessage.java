@@ -37,7 +37,7 @@ public class PushMessage {
         try {
             HashMap<String, String> params = new HashMap<>();
             params.put("to", telNum);
-            params.put("from", "01027253120");
+            params.put("from", CommonConstant.SERVER_ADMIN_TEL_NUMBER);
             params.put("type", "SMS");
             params.put("text", message);
     
@@ -63,7 +63,7 @@ public class PushMessage {
         try {
             HashMap<String, String> params = new HashMap<>();
             params.put("to", telNum);
-            params.put("from", "01027253120");
+            params.put("from", CommonConstant.SERVER_ADMIN_TEL_NUMBER);
             params.put("type", "LMS");
             params.put("text", message);
     
@@ -89,10 +89,10 @@ public class PushMessage {
         try {
             HashMap<String, String> params = new HashMap<>();
             params.put("to", telNum);
-            params.put("from", "");
+            params.put("from", CommonConstant.SERVER_ADMIN_TEL_NUMBER);
             params.put("type", "MMS");
-            params.put("text", "문자보내기 테스트");
-            params.put("image", message);
+            params.put("text", message);
+            params.put("image", "");
     
             JSONObject obj = (JSONObject) coolsms.send(params);
 
@@ -116,9 +116,9 @@ public class PushMessage {
         try {
             HashMap<String, String> params = new HashMap<>();
             params.put("to", telNum);
-            params.put("from", "");
+            params.put("from", CommonConstant.SERVER_ADMIN_TEL_NUMBER);
             params.put("type", "SMS");
-            params.put("text", "문자보내기 테스트");
+            params.put("text", message);
             params.put("datetime", "20190301121000"); // YYYYMMDDHHMISS
     
             JSONObject obj = (JSONObject) coolsms.send(params);

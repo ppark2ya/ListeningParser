@@ -14,6 +14,7 @@ public class CommonConstant {
     public static final String API_SEFILCARE = "/api/sefilcare";
     public static final String API_CHECKSERVER = "/api/checkServer";
     public static final String API_OWNSERVER = "/api/jobs/";
+
     // SERVER CODE
     public static final String ZABBIX_CODE = "00";
     public static final String POSTMAN_CODE = "01";
@@ -34,11 +35,14 @@ public class CommonConstant {
     public static final String SMS_API_KEY = "NCSOHUBPGSDVMUCD";
     public static final String SMS_API_SECRET = "3GAFDNTCWWMUPAYJHUZEEYUBWR1BFEJG";
 
+    // 서버 관리자 휴대폰 번호
+    public static final String SERVER_ADMIN_TEL_NUMBER = "01027253120";
+
     // QUARTZ SCHEDULE
     public static final String CRON_EXPRESSION_ZABBIX = "0 0/1 * * * ?";
-    public static final String CRON_EXPRESSION_POSTMAN = "0 0/2 * * * ?";
-    public static final String CRON_EXPRESSION_SEFILCARE = "0 0/2 * * * ?";
-    public static final String CRON_EXPRESSION_CHECKSERVER = "0 0/2 * * * ?";
+    public static final String CRON_EXPRESSION_POSTMAN = "0 0/1 * * * ?";
+    public static final String CRON_EXPRESSION_SEFILCARE = "0 0/1 * * * ?";
+    public static final String CRON_EXPRESSION_CHECKSERVER = "0 0/1 * * * ?";
     public static final String CRON_EXPRESSION_STOP = "0 0 23 * * ? 2099";
 
 }

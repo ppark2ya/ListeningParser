@@ -23,15 +23,22 @@ public class PostmanJob implements Job {
                             .setMethod(CommonConstant.GET)
                             .build();
     
-            DataModel dm = client.send();
-            dm.putStrNull("serviceCd", CommonConstant.POSTMAN_CODE);
-            logger.info("PostmanJob Response Log Message - {}", dm.get("message"));
+            DataModel response = client.send();
+            logger.info("PostmanJob Response Log Message - {}", response.get("message"));
     
-            // StanfordNLP nlp = new StanfordNLP();
-            // DataModel words = nlp.executeLogAnalyzer(dm);
-            // logger.info("PostmanJob Natural Language Parser Result - {}", words);
+            HttpClient local = HttpClient
+                            .Builder()
+                            .setIp(CommonConstant.OWN_SERVER_IP)
+                            .setApi(CommonConstant.API_OWNSERVER + CommonConstant.POSTMAN_CODE)
+                            .setMethod(CommonConstant.POST)
+                            .setParams(response)
+                            .build();
+                            
+            DataModel result = local.send();
+            logger.info("PostmanJob Natural Language Parser Result - {}", result);
     
             logger.info("PostmanJob END !!!");
+            
         } catch(Exception e) {
             e.printStackTrace();
         }
