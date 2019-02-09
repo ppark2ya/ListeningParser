@@ -9,12 +9,12 @@ import java.util.regex.Pattern;
 public class StringUtil {
     
     /**
-     * 로그 타이틀
+     * sep를 기준으로 문자열 스플릿
      * @param message
+     * @param role
      * @return
      */
-    public static String splitTitle(String message) {
-        String sep = "\n";
+    public static Object splitSeparator(String message, String sep, String role) {
         List<String> result = new ArrayList<>();
 
         List<Integer> sepList = KMPSearch.find(message, sep);
@@ -23,20 +23,24 @@ public class StringUtil {
             result = new ArrayList<String>(Arrays.asList(message.split(sep)));
         }
 
-        return result.get(0);
+        if(role.equals("title")) {
+            return result.get(0).trim();
+        } else {
+            return result;
+        }
     }
 
     /**
      * 패턴 매칭 함수
      * @param message
-     * @param pattern
+     * @param regex
      * @return
      * @throws Exception
      */
-    public static String findSpecificWord(String message, String pattern) throws Exception {
+    public static String findSpecificWord(String message, String regex) throws Exception {
         String findStr = "";
 
-        Pattern p = Pattern.compile(pattern);
+        Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(message);
 
         while(m.find()) {

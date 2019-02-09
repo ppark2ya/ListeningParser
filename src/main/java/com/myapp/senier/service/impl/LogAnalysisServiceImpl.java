@@ -44,8 +44,6 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         String serviceCd = logMap.getStrNull("serviceCd");
         // 기본 로그 타입 ( Default : 웹요청 )
         String logType = "HTTP";
-        // 포스트맨 서버용 패턴
-        String postmanPattern = "\\?.*?\\!";
         // 키워드 테이블의 전체 데이터
         List<DataModel> fullKeyList = jobMapper.getKeywordList(serviceCd);
         // 키워드 데이터 ( 검색에 용이하게 쓰기위해 키워드만 따로 추출 )
@@ -53,7 +51,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         // 키워드 로그 카운팅용 리스트
         List<DataModel> logCntList = new ArrayList<>();
         // 로그 타이틀
-        String title = StringUtil.splitTitle(message);
+        String title = StringUtil.splitSeparator(message, "\n", "title").toString();
         // 파싱된 단어 저장
         List<String> parsedList = new ArrayList<>();
 
@@ -62,7 +60,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
 
         // 포스트맨 로그의 경우 ?와 !사이에 not이 들어가면 무조건 크리티컬로 간주
         if(serviceCd.equals(CommonConstant.POSTMAN_CODE)) {
-            String findStr = StringUtil.findSpecificWord(message, postmanPattern);
+            String findStr = StringUtil.findSpecificWord(message, "\\?.*?\\!");
             List<Integer> sepList = KMPSearch.find(findStr.toLowerCase(), "not");
             if(!sepList.isEmpty()) {
                 isCritical = true;
@@ -175,6 +173,40 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         return resultMap;
     }
 
+    // Sefilcare 로그 메세지 재조립
+    @Override
+    public void reassemblyLogMessage(DataModel logMap) throws Exception {
+        // 로그 메세지
+        String message = logMap.getStrNull("content");
+        // 재구성된 메세지
+        StringBuilder newMessage = new StringBuilder();
+        // 날짜, 버전정보, 에러경로, 발생 line number
+        String date, version, packageRoute, line;
+        // 패키지 경로 정규식
+        String packageRegex = "([a-zA-Z]*_{0,5}\\.[a-zA-Z]*){3,10}";
+        // 날짜 형식 정규식
+        String dateRegex = "([a-zA-Z]{3}\\s)*(\\d*\\s)*([0-9]{2}:?\\s?)*([a-zA-Z]{3})\\+\\d*\\s\\([a-zA-Z]*\\)";
+        // 버전 형식 정규식
+        String versionRegex = "(?i)sefilcare.*\\([0-9]*\\)";
+        // 에러 발생 라인 형식 정규식
+        String lineRegex = "([a-zA-z]*\\sline\\s\\d*)";
+
+        version = StringUtil.findSpecificWord(message, versionRegex);
+        date = StringUtil.findSpecificWord(message, dateRegex);
+        packageRoute = StringUtil.findSpecificWord(message, packageRegex);
+        line = StringUtil.findSpecificWord(message, lineRegex);
+            
+        newMessage.append("### " + version + " / ");
+        newMessage.append(date + "\n");
+        newMessage.append("Fatal Error Occured!! \n");
+        newMessage.append("Occured path: " + packageRoute);
+        if(!line.equals("")) {
+            newMessage.append("\n line : " + line);
+        }
+        logMap.putStrNull("content", newMessage.toString());
+    }
+
+    // 사용자에게 메세지 전송
     @Transactional
     @Override
     public DataModel sendMessageToManagers(DataModel model) throws Exception {
