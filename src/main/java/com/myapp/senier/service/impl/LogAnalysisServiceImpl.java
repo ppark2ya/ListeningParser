@@ -2,10 +2,12 @@ package com.myapp.senier.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import com.myapp.senier.common.CommonConstant;
 import com.myapp.senier.common.utils.KMPSearch;
+import com.myapp.senier.common.utils.OptionalConsumer;
 import com.myapp.senier.common.utils.PushMessage;
 import com.myapp.senier.common.utils.StringUtil;
 import com.myapp.senier.common.utils.TimeUtil;
@@ -71,6 +73,12 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         MaxentTagger tagger = new MaxentTagger("edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger");
         
         String taggedString = tagger.tagString(message);
+        // 자빅스의 경우 타이틀 문자열을 재분석한다.
+        String taggedTitle = tagger.tagString(title);
+        if(serviceCd.equals(CommonConstant.ZABBIX_CODE)) {
+            resultMap.putStrNull("taggedTitle", taggedTitle);
+        }
+
         logger.info("executeLogAnalyzer Parsed Log data - {}", taggedString);
 
         StringTokenizer tok = new StringTokenizer(taggedString, " ");
@@ -105,7 +113,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                 pos.matches("CC.*")
             ) {
                 logger.info("executeLogAnalyzer WORD - {} / POS - {}", word, pos);
-                parsedList.add(word);
+                parsedList.add(word.toLowerCase());
                 
                 // 자체 서버 HTTP 에러코드 체크
                 if(pos.matches("CD.*") &&
@@ -128,6 +136,12 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                     }
                 }
 
+                // Not supported와 같은 구문은 형태소 분석이 되면서 2단어로 분리되어서 따로 처리해줌
+                if(parsedList.contains("not") && parsedList.contains("supported")) {
+                    word = "Not supported";
+                    parsedList.clear();
+                }
+                
                 // 키워드 체크
                 int keyIndex = onlyKeyList.indexOf(word.toLowerCase());
                 // 키워드 발견
@@ -173,6 +187,59 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         return resultMap;
     }
 
+    // 자빅스 타이틀 재분석
+    @Override
+    public DataModel zabbixTitleAnalyzer(DataModel logMap) throws Exception {
+        // sql query parameter
+        DataModel param = new DataModel();
+        // 형태소 분석된 타이틀
+        String taggedTitle = logMap.getStrNull("taggedTitle");
+        // 자연어 태깅 키워드 정규식
+        String taggedKeywordRegex = "([a-zA-Z]*_[a-zA-Z]{2,3}\\s?){1,2}";
+        // 명사 찾기
+        String nounRegex = "\\s([a-zA-Z]*_NN.?\\s?){1,5}";
+        // 동사 정규식
+        String verbRegex = "([a-zA-Z]*_VB.\\s){1,2}";
+        // 품사 정규식
+        String posRegex = "_[a-zA-Z]{2,3}";
+        // 형용사 ( less, more 등 )
+        String adjRegex = "([a-zA-Z]*_JJ.?\\s?)";
+        // 전치사 찾기
+        String preRegex = "([a-zA-Z]*_IN)";
+        // 숫자 찾기
+        String numberRegex = "\\d{1,3}_CD.*";
+
+        // 타이틀 키워드
+        String statusNm = StringUtil.findSpecificWord(taggedTitle, taggedKeywordRegex).replaceAll(posRegex, "");
+        // 상태가 일어난 주체
+        String subject = StringUtil.findSpecificWord(taggedTitle, nounRegex).replaceAll(posRegex, "");
+        // 동사
+        String verb = StringUtil.findSpecificWord(taggedTitle, verbRegex).replaceAll(posRegex, "");
+        // 수치
+        String number = StringUtil.findSpecificWord(taggedTitle, numberRegex).replaceAll(posRegex, "");
+        // less than, more than 과 같은 비교문
+        String comparison = StringUtil.findSpecificWord(taggedTitle, adjRegex + preRegex).replaceAll(posRegex, "");
+        // 표현식 
+        String expression = comparison + " " + number;
+
+        param.putStrNull("serviceCd", logMap.getStrNull("serviceCd"));
+        param.putStrNull("statusNm", statusNm);
+        param.putStrNull("errSubject", subject);
+        param.putStrNull("expression", expression);
+        // select query data model
+        Optional<DataModel> errStatusMap = Optional.ofNullable(jobMapper.getErrorStatus(param));
+        OptionalConsumer.of(errStatusMap)
+                        .ifPresent(esm -> logMap.putStrNull("logStatus", esm.getStrNull("errType")))
+                        .ifNotPresent(() -> {
+                            param.putStrNull("errType", logMap.getStrNull("logStatus"));
+                            param.putStrNull("regDt", TimeUtil.currentDate());
+                            param.putStrNull("regTm", TimeUtil.currentTime());
+                            jobMapper.insNewErrorStatus(param);
+                        });
+
+        return logMap;
+    }
+
     // Sefilcare 로그 메세지 재조립
     @Override
     public void reassemblyLogMessage(DataModel logMap) throws Exception {
@@ -180,8 +247,6 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         String message = logMap.getStrNull("content");
         // 재구성된 메세지
         StringBuilder newMessage = new StringBuilder();
-        // 날짜, 버전정보, 에러경로, 발생 line number
-        String date, version, packageRoute, line;
         // 패키지 경로 정규식
         String packageRegex = "([a-zA-Z]*_{0,5}\\.[a-zA-Z]*){3,10}";
         // 날짜 형식 정규식
@@ -190,11 +255,11 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
         String versionRegex = "(?i)sefilcare.*\\([0-9]*\\)";
         // 에러 발생 라인 형식 정규식
         String lineRegex = "([a-zA-z]*\\sline\\s\\d*)";
-
-        version = StringUtil.findSpecificWord(message, versionRegex);
-        date = StringUtil.findSpecificWord(message, dateRegex);
-        packageRoute = StringUtil.findSpecificWord(message, packageRegex);
-        line = StringUtil.findSpecificWord(message, lineRegex);
+        // 날짜, 버전정보, 에러경로, 발생 line number
+        String version = StringUtil.findSpecificWord(message, versionRegex);
+        String date = StringUtil.findSpecificWord(message, dateRegex);
+        String packageRoute = StringUtil.findSpecificWord(message, packageRegex);
+        String line = StringUtil.findSpecificWord(message, lineRegex);
             
         newMessage.append("### " + version + " / ");
         newMessage.append(date + "\n");

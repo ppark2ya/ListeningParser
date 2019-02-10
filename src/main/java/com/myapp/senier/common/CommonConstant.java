@@ -35,14 +35,14 @@ public class CommonConstant {
     public static final String SMS_API_KEY = "NCSOHUBPGSDVMUCD";
     public static final String SMS_API_SECRET = "3GAFDNTCWWMUPAYJHUZEEYUBWR1BFEJG";
 
-    // 서버 관리자 휴대폰 번호
+    // Server Manager mobile phone number
     public static final String SERVER_ADMIN_TEL_NUMBER = "01027253120";
 
     // QUARTZ SCHEDULE
-    public static final String CRON_EXPRESSION_ZABBIX = "0 0/1 * * * ?";
-    public static final String CRON_EXPRESSION_POSTMAN = "0 0/1 * * * ?";
-    public static final String CRON_EXPRESSION_SEFILCARE = "0 0/1 * * * ?";
-    public static final String CRON_EXPRESSION_CHECKSERVER = "0 0/1 * * * ?";
+    public static final String CRON_EXPRESSION_ZABBIX = "0 0/2 * * * ?";
+    public static final String CRON_EXPRESSION_POSTMAN = "0 0/2 * * * ?";
+    public static final String CRON_EXPRESSION_SEFILCARE = "0 0/2 * * * ?";
+    public static final String CRON_EXPRESSION_CHECKSERVER = "0 0/2 * * * ?";
     public static final String CRON_EXPRESSION_STOP = "0 0 23 * * ? 2099";
 
 }

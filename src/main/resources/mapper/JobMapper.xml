@@ -59,23 +59,6 @@
             SERVICE_CD = #{serviceCd}
 	</select>
 
-    <select id="getErrorStatus" parameterType="string" resultType="com.myapp.senier.model.DataModel">
-		SELECT
-			SERVICE_CD as "serviceCd",
-            ERR_SUBJECT as "errSubject",
-            STATUS_NM as "statusNm",
-            EXPRESSION as "expression",
-            ERR_TYPE as "errType",
-            REG_DT as "regDt",
-            REG_TM as "regTm",
-            UPD_DT as "updDt",
-            UPD_TM as "updTm"
-		FROM
-			TB_ERROR_STATUS
-        WHERE
-            SERVICE_CD = #{serviceCd}
-	</select>
-
     <update id="updateKeywordCnt" parameterType="java.util.List">
         <foreach collection="list" item="DataModel" index="index" separator=";">
             UPDATE TB_KEYWORD 
@@ -128,4 +111,31 @@
         (GROUP_ID, SERVICE_CD, SUCCESS_FLG, SEND_DT, SEND_TM)
         VALUES(#{groupId}, #{serviceCd}, #{successFlg}, #{sendDt}, #{sendTm})
     </insert>
+
+    <select id="getErrorStatus" parameterType="com.myapp.senier.model.DataModel" resultType="com.myapp.senier.model.DataModel">
+		SELECT
+			SERVICE_CD as "serviceCd",
+            STATUS_NM as "statusNm",
+            ERR_SUBJECT as "errSubject",
+            EXPRESSION as "expression",
+            ERR_TYPE as "errType",
+            REG_DT as "regDt",
+            REG_TM as "regTm",
+            UPD_DT as "updDt",
+            UPD_TM as "updTm"
+		FROM
+			TB_ERROR_STATUS
+        WHERE
+            SERVICE_CD = #{serviceCd} 
+            AND STATUS_NM = #{statusNm} 
+            AND ERR_SUBJECT = #{errSubject}
+            AND EXPRESSION = #{expression}
+	</select>
+
+    <insert id="insNewErrorStatus" parameterType="com.myapp.senier.model.DataModel">
+        INSERT INTO TB_ERROR_STATUS
+        (SERVICE_CD, ERR_SUBJECT, STATUS_NM, EXPRESSION, ERR_TYPE, REG_DT, REG_TM, UPD_DT, UPD_TM)
+        VALUES(#{serviceCd}, #{errSubject}, #{statusNm}, #{expression}, #{errType}, #{regDt}, #{regTm}, #{regDt}, #{regTm})
+    </insert>
+
 </mapper>

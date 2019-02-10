@@ -34,6 +34,7 @@ public class SchedulingController {
             // 서버 사용 유무 체크
             if(serverInfo.getStrNull("useCl").equals(CommonConstant.USED)) {
                 resultMap.putAll(logAnalysisService.executeLogAnalyzer(message));
+                logAnalysisService.zabbixTitleAnalyzer(resultMap);
             } else {
                 logger.info("Not supported Server!!");
                 resultMap.putStrNull("logStatus", CommonConstant.NOT_USED);

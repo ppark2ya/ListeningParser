@@ -54,9 +54,9 @@ public class ScheduleManagement {
             .withIdentity(new TriggerKey("checkserverKey"))
             .withSchedule(CronScheduleBuilder.cronSchedule(CommonConstant.CRON_EXPRESSION_CHECKSERVER)).build();
 
-        // scheduler.scheduleJob(ZabbixJob, zabbixTrigger);
-        // scheduler.scheduleJob(PostmanJob, postmanTrigger);
+        scheduler.scheduleJob(ZabbixJob, zabbixTrigger);
+        scheduler.scheduleJob(PostmanJob, postmanTrigger);
         scheduler.scheduleJob(SefilcareJob, sefilcareTrigger);
-        // scheduler.scheduleJob(CheckServerJob, checkserverTrigger);
+        scheduler.scheduleJob(CheckServerJob, checkserverTrigger);
     }
 }

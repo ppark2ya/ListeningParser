@@ -47,6 +47,7 @@ public class StringUtil {
             String matchStr = m.group().trim();
             if(matchStr != null && !matchStr.equals("")) {
                 findStr = matchStr;
+                break;
             }
         }
 

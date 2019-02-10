@@ -23,4 +23,8 @@ public interface JobMapper {
     public List<DataModel> getAuthUserList(DataModel dm);
     // 메세지 전송 로그 히스토리 업데이트
     public int insSMSSendHistory(DataModel dm);
+    // 추가적인 구문 재분석
+    public DataModel getErrorStatus(DataModel dm);
+    // 에러 상태 추가
+    public int insNewErrorStatus(DataModel dm);
 }
