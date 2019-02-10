@@ -189,7 +189,7 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
 
     // 자빅스 타이틀 재분석
     @Override
-    public DataModel zabbixTitleAnalyzer(DataModel logMap) throws Exception {
+    public void zabbixTitleAnalyzer(DataModel logMap) throws Exception {
         // sql query parameter
         DataModel param = new DataModel();
         // 형태소 분석된 타이틀
@@ -236,8 +236,6 @@ public class LogAnalysisServiceImpl implements LogAnalysisService {
                             param.putStrNull("regTm", TimeUtil.currentTime());
                             jobMapper.insNewErrorStatus(param);
                         });
-
-        return logMap;
     }
 
     // Sefilcare 로그 메세지 재조립
