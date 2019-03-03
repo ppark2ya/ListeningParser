@@ -17,7 +17,6 @@ spring:
 jasypt:
   encryptor:
     bean: jasyptStringEncrptor
-    password: SENIER_PROJECT
 
 server:
   port: 8493
