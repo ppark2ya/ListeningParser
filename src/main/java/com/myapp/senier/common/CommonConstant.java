@@ -2,10 +2,10 @@ package com.myapp.senier.common;
 
 public class CommonConstant {
     // SERVER IP
-    public static final String ZABBIX_SERVER_IP = "http://146.148.76.237:3000";
-    public static final String POSTMAN_SERVER_IP = "http://146.148.76.237:3000";
-    public static final String SEFILCARE_SERVER_IP = "http://146.148.76.237:3000";
-    public static final String CHECKSERVER_SERVER_IP = "http://146.148.76.237:3000";
+    public static final String ZABBIX_SERVER_IP = "http://104.198.86.245:3000";
+    public static final String POSTMAN_SERVER_IP = "http://104.198.86.245:3000";
+    public static final String SEFILCARE_SERVER_IP = "http://104.198.86.245:3000";
+    public static final String CHECKSERVER_SERVER_IP = "http://104.198.86.245:3000";
     public static final String OWN_SERVER_IP = "http://localhost:8493";
 
     // SERVER API ADDRESS
@@ -32,11 +32,13 @@ public class CommonConstant {
     public static final String GET = "GET";
 
     // SMS API KEY
-    public static final String SMS_API_KEY = "NCSOHUBPGSDVMUCD";
-    public static final String SMS_API_SECRET = "3GAFDNTCWWMUPAYJHUZEEYUBWR1BFEJG";
-
+    // public static final String SMS_API_KEY = "NCSOHUBPGSDVMUCD";
+    // public static final String SMS_API_SECRET = "3GAFDNTCWWMUPAYJHUZEEYUBWR1BFEJG";
+    public static final String SMS_API_KEY = "NCSYIFMAZGZKVJDX";
+    public static final String SMS_API_SECRET = "IAM3ER1CBMDS3MDSTPUELSL9IEFRDWA0";
     // Server Manager mobile phone number
-    public static final String SERVER_ADMIN_TEL_NUMBER = "01027253120";
+    // public static final String SERVER_ADMIN_TEL_NUMBER = "01027253120";
+    public static final String SERVER_ADMIN_TEL_NUMBER = "01023031367";
 
     // QUARTZ SCHEDULE
     public static final String CRON_EXPRESSION_ZABBIX = "0 0/2 * * * ?";

@@ -3,9 +3,9 @@ spring:
 
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url: ENC(fDr+GDJpLXX/Ko0Emq+c/WDhmLO00egIE/JnTBfBTIIGbx5Lk7mehOTFHm+wjcZHcL5dI9WoI5m9N1CqWUKVTzPPYbssyclKQZ2fiYeVLCQXeXyohJGdhi49rTNhv9eLx78qKumPvozR2UJG9v7KHTyxSKKX+JTkv5KCHLqNiz0f7IsW09YrK5ZP1AC5qZlLw6FEAhSc8BzlndMvprb8oxMXso1vOs8w)
-    username: ENC(8SqjzYv8l7gDHILm8cETrA==)
-    password: ENC(2LwLaEh2R+jWjEMb1rQ8mJFshzlma+P4)
+    url: ENC(GWOhdcDeqr+8zSiWsPrAntKLOEZnSS5S9X+3CJNuH2B8yE7OLIp6VercRzPeTQnMzKCD481PM1XK2SKiDwa2YRhItIKTA6GP/treeObvs5aUIc7jYt1/1AVodqlfoeCb8Cb0vchhJhSWuRgjMOp90yoE6+vkUkfMIMAa4cbAEgNfSR7zTv5+5abOnglkvAjEPYlP1nHhP1QdzckODk+ezkowUOnkREGI)
+    username: ENC(pQcgjPuN48cNrtV86X0KyQ==)
+    password: ENC(3xVDuwiZYRyM8eudVS7EyQ==)
     
   quartz:
     job-store-type: jdbc
